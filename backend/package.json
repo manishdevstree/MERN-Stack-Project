@@ -1,0 +1,16 @@
+{
+  "name": "backend",
+  "version": "1.0.0",
+  "description": "backend",
+  "license": "ISC",
+  "author": "Manish Rathva",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+  "start": "nodemon server.js"
+  },
+  "dependencies": {
+    "express": "^5.2.1",
+    "nodemon": "^3.1.14"
+  }
+}
