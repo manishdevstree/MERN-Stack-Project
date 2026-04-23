@@ -1,16 +1,18 @@
 {
   "name": "backend",
   "version": "1.0.0",
-  "description": "backend",
+  "description": "",
   "license": "ISC",
   "author": "Manish Rathva",
   "type": "module",
-  "main": "index.js",
+  "main": "server.js",
   "scripts": {
-  "start": "nodemon server.js"
+    "start": "node server.js"
   },
   "dependencies": {
+    "dotenv": "^17.4.2",
     "express": "^5.2.1",
+    "mongoose": "^9.5.0",
     "nodemon": "^3.1.14"
   }
 }

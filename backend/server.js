@@ -5,7 +5,7 @@ import Product from "./models/product.model.js";
 
 dotenv.config();
 
-const app =express();
+const app = express();
 
 console.log("dotenv file",process.env.MONGO_URL);
 
@@ -15,7 +15,7 @@ app.get("/",(req,res)=>{
 
 app.use(express.json());
 
-app,get("api/products",async (req,res)=>{
+app.get("/api/products",async (req,res)=>{
     try {
         const products = await Product.find();
         res.status(200).json(products);
