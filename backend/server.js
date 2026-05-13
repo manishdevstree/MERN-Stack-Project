@@ -1,11 +1,14 @@
 import express from "express";
 import dotenv from "dotenv";
 import { connectToDB } from "./config/db.js";
-import Product from "./models/product.model.js";
+import productRoutes from "./routes/product.route.js"
+
 
 dotenv.config();
 
 const app = express();
+
+const PORT = process.env.PORT || 5000;
 
 console.log("dotenv file",process.env.MONGO_URL);
 
@@ -13,48 +16,40 @@ app.get("/",(req,res)=>{
     res.send("Hello World");
 })
 
+const allowedOrigins = new Set([
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+    "http://localhost:4173",
+    "http://127.0.0.1:4173",
+]);
+
+// Allow frontend (Vite) to call backend APIs from a different origin.
+app.use((req, res, next) => {
+    const origin = req.headers.origin;
+
+    if (origin && allowedOrigins.has(origin)) {
+        res.header("Access-Control-Allow-Origin", origin);
+    }
+
+    res.header("Access-Control-Allow-Methods", "GET,POST,PATCH,DELETE,OPTIONS");
+    res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
+    res.header("Vary", "Origin");
+
+    if (req.method === "OPTIONS") {
+        return res.sendStatus(204);
+    }
+
+    next();
+});
+
 app.use(express.json());
 
-app.get("/api/products",async (req,res)=>{
-    try {
-        const products = await Product.find();
-        res.status(200).json(products);
-    } catch (error) {
-        res.status(500).send("Error fetching products");
-    }
-})
+app.use("/api/products",productRoutes);
 
-app.post("/api/products",async (req,res)=>{
-    const product = req.body;
-    if(!product.name || !product.price){
-        return res.status(400).send("Name and price are required");
-    }
-    const newProduct = new Product(product);
-    try {
-        const savedProduct = await newProduct.save();
-        res.status(201).json(savedProduct);
-    } catch (error) {
-        res.status(500).send("Error saving product");
-    }
-})
 
-app.delete("/api/products/:id",async (req,res)=>{
-    const { id } = req.params;
-    console.log("Deleting product with id:", id);
-    try {
-        const deletedProduct = await Product.findByIdAndDelete(id);
-        if(!deletedProduct){
-            return res.status(404).send("Product not found!!");
-        }
-        res.status(200).json({success: true, message: "Product deleted successfully"}, deletedProduct);
-    } catch (error) {
-        res.status(400).json({success: false, message: "Product not found!!"});
-    }
-})
-
-app.listen(5000,()=>{
+app.listen(PORT,()=>{
     connectToDB();
-    console.log("Server is running on port 5000");
+    console.log(`Server is running on port:`+ PORT);
 })
 
 // T51tui9TjpTcXxm5
