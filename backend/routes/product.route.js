@@ -1,15 +1,20 @@
-import express from 'express';
-import { createProduct, deleteProduct, getProducts, updateProduct } from '../controllers/product.controller.js';
+import express from "express";
+import {
+  createProduct,
+  deleteProduct,
+  getProducts,
+  updateProduct,
+} from "../controllers/product.controller.js";
+import { upload } from "../middleware/upload.middleware.js";
 
 const router = express.Router();
 
-router.get("/",getProducts)
+router.get("/", getProducts);
 
-router.post("/",createProduct)
+router.post("/", upload.single("image"), createProduct);
 
-router.patch("/:id",updateProduct)      
+router.patch("/:id", upload.single("image"), updateProduct);
 
-router.delete("/:id",deleteProduct)
-
+router.delete("/:id", deleteProduct);
 
 export default router;

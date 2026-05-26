@@ -1,31 +1,17 @@
 import { useState } from "react";
 
-import {
-  useQuery,
-  useMutation,
-  useQueryClient,
-} from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import ProductForm from "./components/ProductForm";
 import ProductCard from "./components/ProductCard";
-
-import {
-  getProducts,
-  createProduct,
-  deleteProduct,
-  updateProduct,
-} from "./services/productApi";
+import ProductForm from "./components/ProductForm";
+import { createProduct, deleteProduct, getProducts, updateProduct } from "./services/productApi";
 import type { Product } from "./types/product";
-
-
 
 function App() {
   const queryClient = useQueryClient();
 
-  const [editingProduct, setEditingProduct] =
-    useState<Product | null>(null);
+  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
 
-  // GET PRODUCTS
   const {
     data: products = [],
     isPending,
@@ -33,38 +19,28 @@ function App() {
     isError,
     error,
     refetch,
-  } =
-    useQuery({
-      queryKey: ["products"],
-      queryFn: getProducts,
-      staleTime: 60_000,
-      refetchOnWindowFocus: false,
-      retry: 1,
-    });
+  } = useQuery({
+    queryKey: ["products"],
+    queryFn: getProducts,
+    staleTime: 60_000,
+    refetchOnWindowFocus: false,
+    retry: 1,
+  });
 
-  // CREATE PRODUCT
   const createMutation = useMutation({
     mutationFn: createProduct,
-
     onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: ["products"],
-      });
+      queryClient.invalidateQueries({ queryKey: ["products"] });
     },
   });
 
-  // DELETE PRODUCT
   const deleteMutation = useMutation({
     mutationFn: deleteProduct,
-
     onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: ["products"],
-      });
+      queryClient.invalidateQueries({ queryKey: ["products"] });
     },
   });
 
-  // UPDATE PRODUCT
   const updateMutation = useMutation({
     mutationFn: ({
       id,
@@ -74,26 +50,18 @@ function App() {
       data: {
         name: string;
         price: number;
-        image: string;
+        imageFile?: File | null;
+        currentImage?: string;
       };
-    }) =>
-      updateProduct(id, data),
-
+    }) => updateProduct(id, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: ["products"],
-      });
-
+      queryClient.invalidateQueries({ queryKey: ["products"] });
       setEditingProduct(null);
     },
   });
 
   if (isPending && products.length === 0) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-black text-white">
-        Loading...
-      </div>
-    );
+    return <div className="flex min-h-screen items-center justify-center bg-black text-white">Loading...</div>;
   }
 
   if (isError) {
@@ -112,43 +80,35 @@ function App() {
 
   return (
     <div className="min-h-screen bg-[#09090B] p-6 text-white">
-      
       <div className="mx-auto max-w-7xl space-y-8">
-        
-        <h1 className="text-center text-5xl font-bold">
-          Product CRUD
-        </h1>
-        {isFetching && (
-          <p className="text-center text-sm text-zinc-400">Refreshing products...</p>
-        )}
+        <h1 className="text-center text-5xl font-bold">Product CRUD</h1>
+        {isFetching && <p className="text-center text-sm text-zinc-400">Refreshing products...</p>}
 
         <ProductForm
           key={editingProduct?._id ?? "create-product"}
           onSubmit={(data) => {
             if (editingProduct) {
-              updateMutation.mutate({
-                id: editingProduct._id,
-                data,
-              });
+              updateMutation.mutate({ id: editingProduct._id, data });
             } else {
-              createMutation.mutate(data);
+              if (!data.imageFile) return;
+              createMutation.mutate({
+                name: data.name,
+                price: data.price,
+                imageFile: data.imageFile,
+              });
             }
           }}
-          initialData={
-            editingProduct || undefined
-          }
+          initialData={editingProduct || undefined}
           isEdit={!!editingProduct}
+          onCancel={() => setEditingProduct(null)}
         />
 
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          
           {products.map((product: Product) => (
             <ProductCard
               key={product._id}
               product={product}
-              onDelete={(id) =>
-                deleteMutation.mutate(id)
-              }
+              onDelete={(id) => deleteMutation.mutate(id)}
               onEdit={setEditingProduct}
             />
           ))}

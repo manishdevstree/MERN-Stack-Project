@@ -13,14 +13,16 @@ export const getProducts = async () => {
 export const createProduct = async (data: {
   name: string;
   price: number;
-  image: string;
+  imageFile: File;
 }) => {
+  const formData = new FormData();
+  formData.append("name", data.name);
+  formData.append("price", String(data.price));
+  formData.append("image", data.imageFile);
+
   const response = await fetch(API_URL, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(data),
+    body: formData,
   });
 
   if (!response.ok) {
@@ -30,15 +32,10 @@ export const createProduct = async (data: {
   return response.json();
 };
 
-export const deleteProduct = async (
-  id: string
-) => {
-  const response = await fetch(
-    `${API_URL}/${id}`,
-    {
-      method: "DELETE",
-    }
-  );
+export const deleteProduct = async (id: string) => {
+  const response = await fetch(`${API_URL}/${id}`, {
+    method: "DELETE",
+  });
 
   if (!response.ok) {
     throw new Error("Failed to delete product");
@@ -52,19 +49,26 @@ export const updateProduct = async (
   data: {
     name: string;
     price: number;
-    image: string;
+    imageFile?: File | null;
+    currentImage?: string;
   }
 ) => {
-  const response = await fetch(
-    `${API_URL}/${id}`,
-    {
-      method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(data),
-    }
-  );
+  const formData = new FormData();
+  formData.append("name", data.name);
+  formData.append("price", String(data.price));
+
+  if (data.imageFile) {
+    formData.append("image", data.imageFile);
+  }
+
+  if (data.currentImage) {
+    formData.append("currentImage", data.currentImage);
+  }
+
+  const response = await fetch(`${API_URL}/${id}`, {
+    method: "PATCH",
+    body: formData,
+  });
 
   if (!response.ok) {
     throw new Error("Failed to update product");
